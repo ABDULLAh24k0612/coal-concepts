@@ -1,31 +1,55 @@
-; Sum all elements of an array using MASM and Irvine32 library
-
 INCLUDE Irvine32.inc
 
 .data
-array DWORD 1, 2, 3, 4, 5      ; Array of 5 integers
-count DWORD LENGTHOF array      ; Number of elements
-sum   DWORD 0
+mainStr     BYTE "i like assembly",0
+searchStr   BYTE "assembly",0
+replaceStr  BYTE "asm",0
+outStr      BYTE 80 DUP(?)
+searchLen   DWORD 8
+replaceLen  DWORD 3
 
 .code
 main PROC
-    mov ecx, count              ; Set loop counter
-    mov esi, OFFSET array       ; Point ESI to start of array
-    mov eax, 0                  ; Clear EAX (sum)
+    mov esi, OFFSET mainStr
+    mov edi, OFFSET outStr
 
-    L1:
-        add eax, [esi]          ; Add current element to sum
-        add esi, 4              ; Move to next element (DWORD = 4 bytes)
-        loop L1
+next_char:
+    mov al, [esi]
+    cmp al, 0
+    je finish
 
-    mov sum, eax                ; Store result in sum
+    mov ecx, searchLen
+    mov ebx, 0
+match_loop:
+    mov dl, [searchStr+ebx]
+    cmp dl, [esi+ebx]
+    jne no_match
+    inc ebx
+    loop match_loop
 
-    ; Display the sum
-    mov eax, sum
-    call WriteInt
-    call Crlf
+    mov ecx, replaceLen
+    mov ebx, 0
+copy_replace:
+    mov al, [replaceStr+ebx]
+    mov [edi], al
+    inc edi
+    inc ebx
+    loop copy_replace
 
+    add esi, searchLen
+    jmp next_char
+
+no_match:
+    mov [edi], al
+    inc esi
+    inc edi
+    jmp next_char
+
+finish:
+    mov byte ptr [edi], 0
+    mov edx, OFFSET outStr
+    call WriteString
+    call CrLf
     exit
 main ENDP
-
 END main
