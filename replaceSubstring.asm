@@ -1,70 +1,31 @@
+; Sum all elements of an array using MASM and Irvine32 library
+
 INCLUDE Irvine32.inc
 
 .data
-inputstr  byte "i like assembly language",0
-outputstr byte 50 dup(?)
-temp      byte "assembly",0
-replace   byte "asm",0
+array DWORD 1, 2, 3, 4, 5      ; Array of 5 integers
+count DWORD LENGTHOF array      ; Number of elements
+sum   DWORD 0
 
 .code
 main PROC
+    mov ecx, count              ; Set loop counter
+    mov esi, OFFSET array       ; Point ESI to start of array
+    mov eax, 0                  ; Clear EAX (sum)
 
-    mov esi, offset inputstr     
-    mov edi, offset outputstr    
+    L1:
+        add eax, [esi]          ; Add current element to sum
+        add esi, 4              ; Move to next element (DWORD = 4 bytes)
+        loop L1
 
-next_char:
-    lodsb                        
-    cmp al, 0
-    je finish                   
+    mov sum, eax                ; Store result in sum
 
-    mov bl, al                  
-   
-    lea edx, [esi - 1]           
-    mov ecx, LENGTHOF temp - 1   
-    mov ebx, 0                  
-
-match_loop:
-    mov dl, [edx + ebx]         
-    cmp dl, [temp + ebx]        
-    jne not_match
-    inc ebx
-    loop match_loop           
-
-   
-    mov esi, offset replace
-
-copy_replace:
-    lodsb
-    cmp al, 0
-    je skip_input
-    stosb                      
-    jmp copy_replace
-
-skip_input:
-    
-    lea esi, [edx + ebx]        
-    jmp next_char
-
-
-not_match:
-    mov al, bl                   
-    stosb                        
-    jmp next_char
-
-finish:
-    mov al, 0
-    stosb                        
-
-   
-    mov edx, offset inputstr
-    call WriteString
-    call CrLf
-
-   
-    mov edx, offset outputstr
-    call WriteString
-    call CrLf
+    ; Display the sum
+    mov eax, sum
+    call WriteInt
+    call Crlf
 
     exit
 main ENDP
+
 END main
